@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>internet connection monitor</title>
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+</head>
+<body style="margin: 1em;">
+
+<h5>Simple internet connection monitor</h5>
+How it works: tries to download any URL and measures time<br><br>
+
+
+<form id="form" class="form">
+	<div class="form-row">
+		<div class="form-group col-md-6">
+			<label for="staticEmail2">URL to test:</label>
+			<input type="text" class="form-control input-url"
+				   value="  https://cdnjs.cloudflare.com/ajax/libs/960gs/0/960.min.css"/>
+		</div>
+		<div class="form-group col-md-1">
+			<label for="inputPassword2">interval, seconds:</label>
+			<input type="text" class="form-control input-interval" value="3"/>
+		</div>
+		<div class="form-group col-md-3"  style="align-self: flex-end;">
+			<button type="submit" class="btn btn-success  button-start">Start tests</button>
+			&nbsp;<button type="submit" class="btn btn-danger  button-stop">Stop tests</button>
+			<button type="submit" class="btn btn-success  button-test" style="margin-left:4em;">Single test</button>
+		</div>
+	</div>
+	<div class="form-row">
+
+	</div>
+</form>
+
+
+<table id="log" style="min-width: 50em;">
+	<tbody>
+		<tr class="log__tr-template" style="display:none;">
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+	</tbody>
+</table>
+
+<style>
+	.log__tr-template > td:nth-child(3){
+		text-align: right;
+	}
+</style>
+
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"
+		integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+		crossorigin="anonymous"></script>
+
+<script>
+
+
+function InternetMonitor($form, $log){
+	this.$form = $form;
+
+	this.$log = $log;
+	this.$logBody = $log.find('tbody');
+	this.$logTrTemplate = this.$logBody.find(".log__tr-template");
+
+	this.$form.find(".button-start").on("click", function(){ this.start(); return false;}.bind(this));
+
+	this.$form.find(".button-stop").on("click", function(){ this.stop(); return false;}.bind(this));
+
+	this.$form.find(".button-test").on("click", function(){ this.test(); return false;}.bind(this));
+
+}
+
+InternetMonitor.prototype.test = function(){
+
+	var url = this.$form.find(".input-url").val() + '?&rand=' + Math.random();
+
+	var dtStart = new Date;
+
+	this.totalCount = (this.totalCount || 0)+1;
+
+	$.ajax(url)
+		.done(function(d) {
+			var elapsedMSec = (new Date - dtStart);
+			var speed = d.length / (elapsedMSec/1000) ;
+			var speedKb = Math.floor(speed/1024);
+
+			this.addLog(dtStart.toLocaleString(),d.length + " bytes in &nbsp;&nbsp; "+ Math.floor(elapsedMSec/10)/100 +"s",speedKb + "KB");
+		}.bind(this))
+
+		.fail(function(jqXHR, textStatus, errorThrown) {
+			var elapsedMSec = (new Date - dtStart);
+
+			var description = "<span style='color:red'>"+textStatus+"</span>"+" "+errorThrown+" in " + Math.floor(elapsedMSec/10)/100 +"s";
+			this.addLog(dtStart.toLocaleString(), description, "");
+
+		}.bind(this));
+
+
+};
+
+InternetMonitor.prototype.addLog = function(dt, description, speed){
+	var $tr = this.$logTrTemplate.clone();
+	var $tds = $tr.children('td');
+	$($tds[0]).html(dt);
+	$($tds[1]).html(description);
+	$($tds[2]).html(speed);
+	$tr.css('display',"table-row");
+
+	this.$logTrTemplate.after($tr);
+
+};
+
+
+InternetMonitor.prototype.stop = function stop(){
+	if(!this.interval) {
+		return;
+	}
+	clearInterval(this.interval);
+	this.interval = null;
+};
+
+InternetMonitor.prototype.start = function(){
+	this.stop();
+
+	var intervalSeconds = this.$form.find(".input-interval").val();
+
+	this.test();
+	this.interval = setInterval(this.test.bind(this), intervalSeconds*1000)
+};
+
+
+$(function () {
+	new InternetMonitor($('#form'), $('#log'));
+});
+</script>
+</body>
+</html>
