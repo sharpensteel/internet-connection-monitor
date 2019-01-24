@@ -8,21 +8,28 @@
 <body style="margin: 1em;">
 
 <h5>Simple internet connection monitor</h5>
-How it works: tries to download any URL and measures time<br><br>
+How it works: tries to download any URL constantly<br>
+To see correct speed: change field "Actual bytes" to actual bytes transfered by your browser.
+<br>
+<br>
 
 
 <form id="form" class="form">
 	<div class="form-row">
-		<div class="form-group col-md-6">
-			<label for="staticEmail2">URL to test:</label>
+		<div class="form-group col-md-5">
+			<label for="staticEmail2">URL to test (any non-binary):</label>
 			<input type="text" class="form-control input-url"
-				   value="  https://cdnjs.cloudflare.com/ajax/libs/960gs/0/960.min.css"/>
+				   value="https://cdnjs.cloudflare.com/ajax/libs/16pixels/0.1.9/16pixels.min.css"/>
+		</div>
+		<div class="form-group col-md-1">
+			<label for="inputPassword2">Actual bytes:</label>
+			<input type="text" class="form-control input-transfer-size" value="3320"/>
 		</div>
 		<div class="form-group col-md-1">
 			<label for="inputPassword2">interval, seconds:</label>
 			<input type="text" class="form-control input-interval" value="3"/>
 		</div>
-		<div class="form-group col-md-3"  style="align-self: flex-end;">
+		<div class="form-group col-md-5"  style="align-self: flex-end;">
 			<button type="submit" class="btn btn-success  button-start">Start tests</button>
 			&nbsp;<button type="submit" class="btn btn-danger  button-stop">Stop tests</button>
 			<button type="submit" class="btn btn-success  button-test" style="margin-left:4em;">Single test</button>
@@ -45,6 +52,10 @@ How it works: tries to download any URL and measures time<br><br>
 </table>
 
 <style>
+	.form .form-group{
+		align-self: flex-end;
+	}
+
 	.log__tr-template > td:nth-child(3){
 		text-align: right;
 	}
@@ -80,13 +91,22 @@ InternetMonitor.prototype.test = function(){
 
 	this.totalCount = (this.totalCount || 0)+1;
 
-	$.ajax(url)
+	var size = parseInt(this.$form.find(".input-transfer-size").val()) || 0;
+
+	$.ajax({
+		url: url,
+		processData : false
+	})
 		.done(function(d) {
 			var elapsedMSec = (new Date - dtStart);
-			var speed = d.length / (elapsedMSec/1000) ;
+			var speed = size / (elapsedMSec/1000) ;
 			var speedKb = Math.floor(speed/1024);
 
-			this.addLog(dtStart.toLocaleString(),d.length + " bytes in &nbsp;&nbsp; "+ Math.floor(elapsedMSec/10)/100 +"s",speedKb + "KB");
+			this.addLog(
+				dtStart.toLocaleString(),
+				Math.floor(elapsedMSec/10)/100 +"s",
+				size ? speedKb + "KB/s" : ""
+			);
 		}.bind(this))
 
 		.fail(function(jqXHR, textStatus, errorThrown) {
