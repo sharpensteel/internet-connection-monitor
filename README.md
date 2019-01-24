@@ -8,6 +8,8 @@ How to use:
 
 
 
+Demo: https://cdn.staticaly.com/gh/sharpensteel/internet-connection-monitor/cbb76745/monitor.html
+
 Screenshot:
 
 ![Screenshot](docs/screenshot.png?raw=true "Screenshot")
