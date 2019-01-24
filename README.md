@@ -9,7 +9,7 @@ How to use:
 
 
 
-Demo: https://cdn.staticaly.com/gh/sharpensteel/internet-connection-monitor/cbb76745/monitor.html
+Demo: https://cdn.staticaly.com/gh/sharpensteel/internet-connection-monitor/master/monitor.html
 
 Screenshot:
 
